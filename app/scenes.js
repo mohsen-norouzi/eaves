@@ -1,0 +1,6 @@
+export const scenes = [
+  { id: 'silence', name: 'The quiet within', label: 'CHAPTER ONE', title: ['Timeless places,', 'endless stories.'], description: ['Wander gently.', 'Listen deeply.'], inscription: '無聲之境', align: 'left', x1: 916, x2: 1594, count: 39, anchor: u => 445 - u * 49, length: (u,i) => 270 + 260 * Math.abs(Math.sin(i * 1.81)) + 35 * Math.sin(i * .5) },
+  { id: 'whisper', name: 'A passing whisper', label: 'CHAPTER TWO', title: ['Some places', 'speak in whispers', 'only the heart', 'can hear.'], description: ['Travel not to escape,', 'but to remember.'], inscription: '風之詩', align: 'left', x1: 932, x2: 1518, count: 35, anchor: u => 365 + 63 * Math.pow(Math.abs(2 * u - 1), .7), length: (u,i) => 220 + 310 * Math.sin(u * Math.PI) + 56 * Math.sin(i * 1.82) },
+  { id: 'sky', name: 'Beneath the same sky', label: 'CHAPTER THREE', title: ['Where eaves hold', 'the sky, and time', 'moves like drifting cloud.'], description: ['Beneath the roof of quiet grandeur,', 'stories travel far and return as mist.', 'Listen to what the distance remembers.'], inscription: '萬物靜觀皆自得', align: 'right', x1: 354, x2: 1092, count: 38, anchor: () => 470, length: (u,i) => 170 + 315 * Math.abs(Math.sin(i * 1.42)) },
+];
+export const poem = '山川異域風月同天行到水窮處坐看雲起時空山不見人但聞人語響明月松間照清泉石上流白雲深處有人家春風又綠江南岸';
