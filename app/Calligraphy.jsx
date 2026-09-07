@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { poem } from './scenes';
 import { makeRopes, stepRopes } from './physics';
+import { brushedStrands } from './chimes';
 
-export default function Calligraphy({ scene, active, paused }) {
+export default function Calligraphy({ scene, active, paused, chimes }) {
   const ref=useRef(null);
   const ropes=useRef(null);
+  const lastInput=useRef(null);
   const pointer=useRef({active:false,x:0,y:0,vx:0,vy:0});
   useEffect(()=>{
     const canvas=ref.current, ctx=canvas.getContext('2d');
@@ -39,12 +41,21 @@ export default function Calligraphy({ scene, active, paused }) {
       draw();frame=requestAnimationFrame(tick);
     };
     draw();if(active&&!paused)frame=requestAnimationFrame(tick);
-    return()=>{cancelAnimationFrame(frame);pointer.current.active=false;};
+    return()=>{cancelAnimationFrame(frame);pointer.current.active=false;lastInput.current=null;};
   },[scene,active,paused]);
   function move(e) {
     const rect=ref.current.getBoundingClientRect(),p=pointer.current;
     const x=(e.clientX-rect.left)*1920/rect.width,y=(e.clientY-rect.top)*1080/rect.height;
+    const now=performance.now(),last=lastInput.current;
+    if(active && !paused && !document.hidden && last && now-last.time<140 && ropes.current){
+      const speed=Math.hypot(x-last.x,y-last.y)/Math.max(8,now-last.time)*1000;
+      for(const hit of brushedStrands(ropes.current,last,{x,y})){
+        const pan=(e.clientX/window.innerWidth)*1.5-.75;
+        if(chimes.current?.strike(scene.id,hit.strand,speed,pan))break;
+      }
+    }
+    lastInput.current={x,y,time:now};
     p.vx=p.active?x-p.x:0;p.vy=p.active?y-p.y:0;p.x=x;p.y=y;p.active=true;
   }
-  return <canvas ref={ref} width="1920" height="1080" className="calligraphy" aria-hidden="true" onPointerMove={move} onPointerDown={move} onPointerLeave={()=>pointer.current.active=false} onPointerUp={e=>{if(e.pointerType==='touch')pointer.current.active=false;}}/>;
+  return <canvas ref={ref} width="1920" height="1080" className="calligraphy" aria-hidden="true" onPointerMove={move} onPointerDown={move} onPointerLeave={()=>{pointer.current.active=false;lastInput.current=null;}} onPointerUp={e=>{if(e.pointerType==='touch')pointer.current.active=false;}}/>;
 }

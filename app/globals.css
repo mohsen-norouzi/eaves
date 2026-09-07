@@ -30,3 +30,6 @@
 }
 @media(max-height:700px) and (max-width:700px){.story h1,.right .story h1{font-size:27px}.story p{font-size:12px}.story,.right .story{bottom:22%}}
 @media(max-width:700px) and (min-aspect-ratio:1/1){.art-frame,.right .art-frame{transform:translate(-50%,-50%)}}
+@media(max-width:1000px){.wind-controls .wind-hint{display:none}}
+
+.about-copy .audio-credits{font-size:12px;line-height:1.7;color:var(--muted)}.audio-credits a{text-decoration:underline;text-underline-offset:3px}.audio-credits a:hover{color:var(--primary)}
