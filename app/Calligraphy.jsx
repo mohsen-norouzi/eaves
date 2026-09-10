@@ -3,7 +3,7 @@ import { poem } from './scenes';
 import { makeRopes, stepRopes } from './physics';
 import { brushedStrands } from './chimes';
 
-export default function Calligraphy({ scene, active, paused, chimes }) {
+export default function Calligraphy({ scene, active, chimes }) {
   const ref=useRef(null);
   const ropes=useRef(null);
   const lastInput=useRef(null);
@@ -36,18 +36,19 @@ export default function Calligraphy({ scene, active, paused, chimes }) {
     };
     const tick=time=>{
       if(document.hidden){previous=0;frame=requestAnimationFrame(tick);return;}
+      chimes.current?.releaseIdle();
       accumulator+=previous?Math.min(time-previous,50):16.667;previous=time;
       while(accumulator>=16.667){stepRopes(ropes.current,pointer.current,time);pointer.current.vx*=.8;pointer.current.vy*=.8;accumulator-=16.667;}
       draw();frame=requestAnimationFrame(tick);
     };
-    draw();if(active&&!paused)frame=requestAnimationFrame(tick);
+    draw();if(active)frame=requestAnimationFrame(tick);
     return()=>{cancelAnimationFrame(frame);pointer.current.active=false;lastInput.current=null;};
-  },[scene,active,paused]);
+  },[scene,active]);
   function move(e) {
     const rect=ref.current.getBoundingClientRect(),p=pointer.current;
     const x=(e.clientX-rect.left)*1920/rect.width,y=(e.clientY-rect.top)*1080/rect.height;
     const now=performance.now(),last=lastInput.current;
-    if(active && !paused && !document.hidden && last && now-last.time<140 && ropes.current){
+    if(active && !document.hidden && last && now-last.time<140 && ropes.current){
       const speed=Math.hypot(x-last.x,y-last.y)/Math.max(8,now-last.time)*1000;
       for(const hit of brushedStrands(ropes.current,last,{x,y})){
         const pan=(e.clientX/window.innerWidth)*1.5-.75;
@@ -57,5 +58,9 @@ export default function Calligraphy({ scene, active, paused, chimes }) {
     lastInput.current={x,y,time:now};
     p.vx=p.active?x-p.x:0;p.vy=p.active?y-p.y:0;p.x=x;p.y=y;p.active=true;
   }
-  return <canvas ref={ref} width="1920" height="1080" className="calligraphy" aria-hidden="true" onPointerMove={move} onPointerDown={move} onPointerLeave={()=>{pointer.current.active=false;lastInput.current=null;}} onPointerUp={e=>{if(e.pointerType==='touch')pointer.current.active=false;}}/>;
+  function leave() {
+    pointer.current.active=false;lastInput.current=null;
+    if(active)chimes.current?.releaseBrush();
+  }
+  return <canvas ref={ref} width="1920" height="1080" className="calligraphy" aria-hidden="true" onPointerMove={move} onPointerDown={move} onPointerLeave={leave} onPointerCancel={leave} onPointerUp={e=>{if(e.pointerType==='touch')leave();}}/>;
 }

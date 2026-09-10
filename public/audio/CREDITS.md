@@ -23,7 +23,7 @@ License: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
 Files: `smand-525052-1.wav`, `-2.wav`, `-3.wav`.
 Edits: 4-second excerpts beginning at 0.5s, 4.9s and 17.8s; volume adjusted and short fades applied. Original pitch and speed retained.
 
-Sources were acquired from the high-quality MP3 previews linked by the respective Freesound pages and converted to local stereo WAV excerpts. No additional synthesis, pitch shifts, reverse effects or artificial overtones are applied in the website.
+Sources were acquired from the high-quality MP3 previews linked by the respective Freesound pages and converted to local stereo WAV excerpts. Playback skips quiet lead-ins, limits each strike to 1.5 seconds, and applies cursor-controlled release fades. No additional synthesis, pitch shifts, reverse effects or artificial overtones are applied in the website.
 
 ## Other recordings and retained earlier files
 

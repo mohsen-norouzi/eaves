@@ -32,9 +32,27 @@ export function brushedStrands(ropes, from, to) {
   }).filter(hit=>hit.distance<19).sort((a,b)=>a.along-b.along);
 }
 
+// Find the first audible attack once at load time, keeping a small lead-in.
+// This skips quiet gaps without changing the recording's pitch or timbre.
+export function sampleOnset(buffer) {
+  const window=Math.max(1,Math.floor(buffer.sampleRate*.005));
+  const channels=Array.from({length:buffer.numberOfChannels},(_,i)=>buffer.getChannelData(i));
+  const levels=[];
+  for(let start=0;start<buffer.length;start+=window){
+    const end=Math.min(buffer.length,start+window);
+    let energy=0;
+    for(const channel of channels)for(let i=start;i<end;i++)energy+=channel[i]*channel[i];
+    levels.push(Math.sqrt(energy/((end-start)*channels.length)));
+  }
+  const peak=levels.reduce((max,level)=>Math.max(max,level),0);
+  if(peak<.0001)return 0;
+  const first=levels.findIndex(level=>level>=peak*.25);
+  return Math.max(0,first*window/buffer.sampleRate-.008);
+}
+
 export class Chimes {
-  constructor(){this.context=null;this.enabled=false;this.voices=new Set();this.lastNotes=new Map();this.lastStrike=-Infinity;this.buffers=new Map();this.loading=null;this.disposed=false;}
-  async enable(){
+  constructor(){this.context=null;this.enabled=false;this.muted=false;this.voices=new Set();this.lastNotes=new Map();this.lastStrike=-Infinity;this.buffers=new Map();this.offsets=new Map();this.lastContact=-Infinity;this.loading=null;this.disposed=false;}
+  prepare(){
     if(this.disposed)return;
     const Audio=globalThis.AudioContext || globalThis.webkitAudioContext;
     if(!Audio)throw new Error('Audio is unavailable in this browser.');
@@ -47,8 +65,12 @@ export class Chimes {
       this.master.connect(compressor);compressor.connect(this.context.destination);
     }
     void this.loadSamples();
+  }
+  async enable(){
+    if(this.disposed||this.muted)return;
+    this.prepare();
     await this.context.resume();
-    if(this.disposed)return;
+    if(this.disposed||this.muted)return;
     if(this.context.state!=='running')throw new Error('Audio is waiting for a browser interaction.');
     this.enabled=true;
     this.master.gain.cancelScheduledValues(this.context.currentTime);
@@ -62,7 +84,7 @@ export class Chimes {
       const response=await fetch(sample);
       if(!response.ok)throw new Error(`Missing audio: ${sample}`);
       const buffer=await context.decodeAudioData(await response.arrayBuffer());
-      if(!this.disposed)this.buffers.set(sample,buffer);
+      if(!this.disposed){this.offsets.set(sample,sampleOnset(buffer));this.buffers.set(sample,buffer);}
     }));
     return this.loading;
   }
@@ -75,15 +97,21 @@ export class Chimes {
     // Natural-pitch palettes select separate recorded notes, never retune them.
     const rate=profile.naturalPitch ? 1 : 2**((scale[strand%5]-4)/12);
     source.playbackRate.value=rate;
-    const duration=buffer.duration/rate;
+    const offset=this.offsets.get(sample)??0;
+    const duration=Math.min(1.5,(buffer.duration-offset)/rate);
     panner.pan.value=Math.max(-.75,Math.min(.75,pan));
-    gain.gain.setValueAtTime(profile.level*(.55+.45*strength),now);
-    gain.gain.setTargetAtTime(.00001,now+Math.max(.05,duration-.18),.04);
+    gain.gain.setValueAtTime(0,now);
+    gain.gain.linearRampToValueAtTime(profile.level*(.55+.45*strength),now+.003);
+    gain.gain.setTargetAtTime(.00001,now+Math.max(.05,duration-.45),.09);
     source.connect(gain);gain.connect(panner);panner.connect(this.master);
-    const voice={gain,oscillators:[source]};this.voices.add(voice);
+    const voice={gain,oscillators:[source],endsAt:now+duration};this.voices.add(voice);
     source.onended=()=>{source.disconnect();gain.disconnect();panner.disconnect();this.voices.delete(voice);};
-    source.start(now);source.stop(now+duration);
+    source.start(now,offset);source.stop(now+duration);
     return true;
+  }
+  setMuted(muted){
+    this.muted=muted;
+    if(muted)this.disable();
   }
   disable(){
     this.enabled=false;
@@ -93,20 +121,42 @@ export class Chimes {
       this.silence();
     }
   }
-  silence(){
+  releaseVoice(voice,now,fade=.18){
+    // A returning pointer cannot prolong a tail; mute/navigation may shorten it.
+    const end=Math.min(now+fade,voice.endsAt??Infinity);
+    if(voice.releaseEnd!==undefined && end>=voice.releaseEnd)return;
+    voice.releasing=true;voice.releaseEnd=end;
+    const remaining=Math.max(.001,end-now);
+    const param=voice.gain.gain;
+    if(param.cancelAndHoldAtTime)param.cancelAndHoldAtTime(now);
+    else {const value=param.value;param.cancelScheduledValues(now);param.setValueAtTime(value,now);}
+    if(fade>.3){
+      // Exponential decay leaves a small resonant tail instead of a hard cutoff.
+      param.setTargetAtTime(0,now,remaining/4);
+      const finish=Math.max(now,end-.04);
+      param.setValueAtTime(Math.max(0,param.value)*Math.exp(-(finish-now)/(remaining/4)),finish);
+    }
+    param.linearRampToValueAtTime(0,end);
+    for(const source of voice.oscillators)source.stop(end+.01);
+  }
+  silence(fade=.12){
     if(!this.context)return;
     const now=this.context.currentTime;
-    for(const voice of this.voices){
-      voice.gain.gain.cancelScheduledValues(now);voice.gain.gain.setTargetAtTime(0,now,.02);
-      for(const osc of voice.oscillators)osc.stop(now+.12);
-    }
-    this.lastNotes.clear();this.lastStrike=-Infinity;
+    for(const voice of this.voices)this.releaseVoice(voice,now,fade);
+    this.lastNotes.clear();this.lastStrike=-Infinity;this.lastContact=-Infinity;
+  }
+  releaseBrush(){this.silence(1.1);}
+  releaseIdle(){
+    if(this.context && this.lastContact!==-Infinity && this.context.currentTime-this.lastContact>.16)this.releaseBrush();
   }
   strike(sceneId,strand,speed,pan=0){
     if(!this.enabled || this.context?.state!=='running' || speed<25)return false;
     const now=this.context.currentTime,key=`${sceneId}:${strand}`;
     const {profile,frequency}=noteForStrand(sceneId,strand);
-    if(now-(this.lastNotes.get(key)??-Infinity)<(profile.sample ? .85 : .65) || now-this.lastStrike<(profile.interval??.085) || this.voices.size>=(profile.maxVoices??(profile.sample?8:14)))return false;
+    this.lastContact=now;
+    if(now-(this.lastNotes.get(key)??-Infinity)<(profile.sample ? .28 : .65) || now-this.lastStrike<Math.min(profile.interval??.085,.14))return false;
+    const playing=[...this.voices].filter(voice=>!voice.releasing);
+    if(playing.length>=(profile.maxVoices??(profile.sample?8:14)))this.releaseVoice(playing[0],now,.06);
     const strength=Math.max(.18,Math.min(1,speed/1700));
     if(profile.sample){
       if(!this.recordedStrike(profile,strand,strength,pan,now))return false;
@@ -135,17 +185,21 @@ export class Chimes {
 }
 
 // Try immediately where autoplay is permitted; a normal click/touch/key unlocks
-// audio in browsers that require user activation. No sound control is needed.
-export function attachAutomaticAudio(engine,target,doc){
+// audio in browsers that require user activation. Explicit mute always wins.
+export function attachAutomaticAudio(engine,target,doc,onActivation=()=>{}){
   let disposed=false;
+  const update=()=>{if(!disposed)onActivation(Boolean(engine.enabled&&engine.context?.state==='running'));};
   const unlock=()=>{
-    if(disposed||doc.hidden||engine.context?.state==='running'&&engine.enabled)return;
-    void engine.enable().catch(()=>{});
+    if(disposed||doc.hidden||engine.muted||engine.context?.state==='running'&&engine.enabled)return;
+    void engine.enable().then(update,update);
+    update();
   };
   const events=['pointerdown','pointerup','touchend','keydown','click'];
   for(const event of events)target.addEventListener(event,unlock,{passive:true});
   const visibility=()=>{if(doc.hidden)engine.silence();else unlock();};
+  const quiet=()=>engine.releaseBrush();
+  target.addEventListener('blur',quiet);
   doc.addEventListener('visibilitychange',visibility);
   unlock();
-  return()=>{disposed=true;for(const event of events)target.removeEventListener(event,unlock);doc.removeEventListener('visibilitychange',visibility);};
+  return()=>{disposed=true;for(const event of events)target.removeEventListener(event,unlock);doc.removeEventListener('visibilitychange',visibility);target.removeEventListener('blur',quiet);};
 }
