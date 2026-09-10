@@ -7,14 +7,14 @@ import { createWheelState, wheelStep } from './navigation';
 import './globals.css';
 
 function CreatorCredit() {
-  return <a className="creator-credit" href="https://itsmohsen.com/" target="_blank" rel="noopener noreferrer" aria-label="Created by Mohsen — opens in a new tab">
-    MADE BY MOHSEN
+  return <a className="creator-credit" href="https://itsmohsen.com/" target="_blank" rel="noopener noreferrer" aria-label="Made by Mohsen — visit my website (opens in a new tab)" title="Visit Mohsen’s website">
+    <span className="credit-text">MADE BY MOHSEN</span><span className="credit-external" aria-hidden="true">↗</span>
   </a>;
 }
 
 const purchaseUrl=`https://wa.me/34666601296?text=${encodeURIComponent("Hi Mohsen, I'm interested in buying Quiet Eaves. Could you share the price and what's included?")}`;
 function BuyButton() {
-  return <a className="buy-button" href={purchaseUrl} target="_blank" rel="noopener noreferrer" aria-label="Make this yours — enquire about purchasing on WhatsApp (opens in a new tab)"><span className="purchase-label">Make this yours</span><span className="purchase-arrow" aria-hidden="true">↗</span></a>;
+  return <a className="buy-button" href={purchaseUrl} target="_blank" rel="noopener noreferrer" aria-label="Make this yours — enquire about purchasing on WhatsApp (opens in a new tab)">Make this yours</a>;
 }
 
 export default function App() {

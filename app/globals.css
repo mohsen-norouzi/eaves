@@ -73,22 +73,29 @@
 .site-header{top:var(--edge-top);left:var(--edge-left);right:var(--edge-right)}
 .scroll-cue{left:var(--edge-left);bottom:var(--edge-bottom);min-height:32px;padding:6px 0}
 .chapter-index{left:var(--edge-left);right:auto;bottom:calc(var(--edge-bottom) + 76px)}
-.footer-controls{right:var(--edge-right);bottom:var(--edge-bottom);display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.footer-controls .creator-credit{min-height:32px;padding:6px 0}
+.footer-controls{right:var(--edge-right);bottom:var(--edge-bottom);display:flex;flex-direction:column;align-items:center;gap:10px}
+.footer-controls .creator-credit{min-height:0;padding:0;line-height:14px}
 .footer-controls.intro-footer{position:absolute;left:50%;right:auto;transform:translateX(-50%);align-items:center;width:max-content}
 .audio-invitation{right:var(--edge-right);bottom:calc(var(--edge-bottom) + 98px)}
-/* A small parchment button lives with the maker's signature, away from navigation. */
-.buy-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:42px;padding:10px 16px;margin:0;background:#eee2cfb3;border:1px solid #8b796655;border-radius:2px;color:#494137;font:italic 15px/1.2 var(--font-serif);letter-spacing:.015em;text-decoration:none;white-space:nowrap;transition:color .25s,border-color .25s,background .25s}
-.purchase-label{padding:0}.buy-button .purchase-arrow{font:13px/1 var(--font-serif);color:var(--primary);transition:transform .25s}
-.buy-button:hover{color:var(--primary);border-color:#a13b2790;background:#f3e8d5}.buy-button:hover .purchase-arrow{transform:translate(2px,-2px)}
+/* A restrained invitation and signature share the same center line. */
+.buy-button{display:inline-flex;align-items:center;justify-content:center;width:156px;min-height:36px;padding:9px 12px;margin:0;background:transparent;border:1px solid #8b796640;border-radius:0;color:#595045;font:10px/1.4 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:color .2s,border-color .2s}
+
+.buy-button:hover{color:var(--primary);border-color:#a13b2790}
 .buy-button:focus-visible{outline:1px solid var(--primary);outline-offset:5px}
 @media(max-width:1100px){.site-header{gap:3vw}.site-header nav{gap:2vw}.header-actions{gap:14px}.menu-toggle{gap:14px}}
 @media(max-width:700px){
   .site-header{height:auto;gap:16px}.site-header nav{gap:16px}.header-actions{gap:8px}
-  .buy-button{font-size:14px;padding:10px 12px;gap:9px}.footer-controls{gap:5px}.footer-controls .creator-credit{font-size:9px}
+  .buy-button{width:144px;font-size:9px}.footer-controls{gap:10px}.footer-controls .creator-credit{font-size:9px}
   .scroll-cue{gap:9px;font-size:8px}.scroll-line{width:28px}
   .chapter-index{bottom:calc(var(--edge-bottom) + 96px);gap:14px}
   .audio-invitation{top:calc(var(--edge-top) + 68px);bottom:auto}
   .intro{padding-bottom:148px}
 }
-@media(max-width:420px){.site-header{gap:12px}.site-header nav{gap:12px}.header-actions{gap:4px}.header-actions .sound-toggle{width:36px}.buy-button{padding:10px;font-size:13px;gap:7px}.scroll-cue{letter-spacing:.1em}}
+@media(max-width:420px){.site-header{gap:12px}.site-header nav{gap:12px}.header-actions{gap:4px}.header-actions .sound-toggle{width:36px}.scroll-cue{letter-spacing:.1em}}
+
+/* The outlined purchase action and the quieter external credit remain distinct. */
+.footer-controls .creator-credit{gap:6px;white-space:nowrap}
+.creator-credit .credit-text{font:inherit;letter-spacing:inherit;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:4px;text-decoration-thickness:1px;transition:text-decoration-color .2s}
+.creator-credit .credit-external{font:12px/1 var(--font-mono);letter-spacing:0;color:var(--primary)}
+.creator-credit:hover .credit-text,.creator-credit:focus-visible .credit-text{text-decoration-color:currentColor}
+.footer-controls .creator-credit:after{content:'';position:absolute;inset:-5px -3px}
