@@ -4,6 +4,7 @@ import { scenes } from '../scenes';
 import { brushedStrands } from '../chimes';
 import { createArchitecture, disposeObject } from './architecture';
 import { createInkCurtain } from './InkCurtain';
+import { createEnvironment } from './environment';
 import {
   advanceWalker,
   houseLocation,
@@ -51,6 +52,8 @@ export default function WorldCanvas({
     const world = new T.Scene();
     world.background = new T.Color('#e9dfcd');
     world.fog = new T.FogExp2('#e9dfcd', 0.022);
+    const environment = createEnvironment();
+    world.add(environment.group);
     const sky = new T.HemisphereLight('#fff4dc', '#9e9785', 2);
     world.add(sky);
     const sun = new T.DirectionalLight('#fff1d5', 3);
@@ -152,7 +155,7 @@ export default function WorldCanvas({
       return { ...architecture, ink, house, index };
     });
     world.updateMatrixWorld(true);
-    const camera = new T.PerspectiveCamera(58, 1, 0.08, 160),
+    const camera = new T.PerspectiveCamera(58, 1, 0.08, 400),
       player = { x: 0, z: 3, yaw: 0.28, pitch: 0.09 };
     camera.rotation.order = 'YXZ';
     let frame = 0,
@@ -263,6 +266,7 @@ export default function WorldCanvas({
         sun.target.position.set(player.x, 0, player.z - 5);
         sun.target.updateMatrixWorld();
       } else resetInput();
+      environment.update(camera);
       renderer.render(world, camera);
       if (!ready) {
         ready = true;
