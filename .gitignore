@@ -36,3 +36,6 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# Original large audio retained locally; only compressed versions are served.
+/source-audio/

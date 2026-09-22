@@ -48,3 +48,7 @@ Chapters 1, 2, 3 and 6 preserve their approved sounds. The user's three chosen F
 Each chapter uses three short stereo excerpts of its selected source at the original speed and pitch. There is no added synthesis or pitch shifting. Playback still responds to brushing the strands, with overlap limits to keep the texture clear. Files are served locally from `public/audio/`.
 
 Full source links, licenses and excerpt times are in `public/audio/CREDITS.md`. nlux's CC BY 4.0 attribution is visible in About. `app/chimes.js` handles sample selection and playback; tests check exact source mapping, available WAV files, unchanged approved voices and original-speed playback.
+
+## Desert ambience
+
+The user-supplied desert recording streams from `public/audio/desert.m4a` as a quiet continuous loop after entry. A two-second overlap softens the loop seam; playback fades in beneath the chimes and continues through house visits and menus. The header sound button mutes both layers. Background audio pauses when the tab is hidden and resumes from the same position when visible, respecting mute. `app/ambience.js` manages playback through a separate gain on the existing audio context. The large original is preserved in the ignored local `source-audio/` folder and is excluded from the website build.

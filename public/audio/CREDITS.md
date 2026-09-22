@@ -45,3 +45,7 @@ The following recordings are CC0 1.0. They are genuine individual wind-chime str
 - **low-chime.wav**: “WindChime1.wav” by perrydolia. https://freesound.org/people/perrydolia/sounds/556410/ — a single C4 wind-chime strike, Chapter 7.
 
 Chapters 1 and 3 retain their original synthesized sounds, and Chapters 2 and 6 retain their previously approved recordings. Furin and copper files are unused earlier versions.
+
+## Background environment
+
+`desert.m4a` is compressed from the desert recording supplied by the project owner. No external creator or license information was provided. The full recording is retained, with a two-second overlap between the ending and beginning to soften the loop seam, encoded as stereo AAC at 64 kb/s. The original is kept locally in `source-audio/desert.original.mp3` outside the served assets.

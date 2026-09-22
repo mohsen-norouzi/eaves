@@ -9,6 +9,7 @@ import {
 import { scenes } from './scenes';
 import Calligraphy from './Calligraphy';
 import { Chimes, attachAutomaticAudio } from './chimes';
+import { DesertAmbience, AMBIENCE_URL } from './ambience';
 import './globals.css';
 const WorldCanvas = lazy(() => import('./world/WorldCanvas'));
 
@@ -54,9 +55,13 @@ export default function App() {
   const [audioAwake, setAudioAwake] = useState(true);
   const [muted, setMuted] = useState(false);
   const chimes = useRef(null);
+  const ambience = useRef(null);
+  const ambientAudio = useRef(null);
   useEffect(() => {
     chimes.current ??= new Chimes();
     const engine = chimes.current;
+    const background = new DesertAmbience({ audio: ambientAudio.current });
+    ambience.current = background;
     // Fetch and decode before entry, but resume audio only from the Enter click.
     try {
       engine.prepare();
@@ -64,6 +69,8 @@ export default function App() {
       // Entry retries initialization and reports an audio failure if it persists.
     }
     return () => {
+      background.dispose();
+      ambience.current = null;
       engine.dispose();
       chimes.current = null;
     };
@@ -101,7 +108,9 @@ export default function App() {
     setEntering(true);
     try {
       // Keep resume inside this trusted click, before any asynchronous work.
-      await chimes.current.enable();
+      const activation = chimes.current.enable();
+      void ambience.current?.start(chimes.current.context);
+      await activation;
       setAudioAwake(chimes.current.enabled);
     } catch {
       setAudioAwake(false);
@@ -117,6 +126,7 @@ export default function App() {
     if (!engine) return;
     const next = !engine.muted;
     engine.setMuted(next);
+    void ambience.current?.setMuted(next);
     setMuted(next);
     if (!next)
       void engine.enable().then(
@@ -130,6 +140,15 @@ export default function App() {
   }
   return (
     <>
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption -- Optional ambient soundtrack; no spoken or instructional content. */}
+      <audio
+        ref={ambientAudio}
+        src={AMBIENCE_URL}
+        preload="metadata"
+        loop
+        hidden
+        aria-hidden="true"
+      />
       {!entered && (
         <section className="intro" aria-labelledby="intro-title">
           <div className="intro-art" aria-hidden="true" />
@@ -206,9 +225,9 @@ export default function App() {
             <button
               className="sound-toggle"
               onClick={toggleMute}
-              aria-label="Mute chimes"
+              aria-label="Mute sound"
               aria-pressed={muted}
-              title={muted ? 'Unmute chimes' : 'Mute chimes'}
+              title={muted ? 'Unmute sound' : 'Mute sound'}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M11 5 6 9H3v6h3l5 4Z" />
