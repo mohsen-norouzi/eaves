@@ -6,7 +6,7 @@ export class DesertAmbience {
   constructor({
     audio = new Audio(AMBIENCE_URL),
     doc = document,
-    schedule = (fn, delay) => setTimeout(fn, delay),
+    schedule = (fn, delay) => setTimeout(() => fn(), delay),
     cancel = (id) => clearTimeout(id),
   } = {}) {
     this.audio = audio;
