@@ -17,9 +17,21 @@ bun run build
 bun run preview
 ```
 
-Scenes use a 1920 × 1080 coordinate system. Artwork scales uniformly to cover the full viewport without letterboxing; the hanging text uses the same covering frame. Headings remain inside the viewport. Mouse-wheel and trackpad input advances horizontally, with the next chapter entering from the right. Touch supports horizontal swipes. Trackpad momentum is gated to one chapter per gesture. Arrow keys, Page Up/Down, Home/End, the chapter menu and numbered controls also navigate. Touch motion influences the text without blocking horizontal swiping. Wind stays active. Brush-triggered sound defaults to on; the speaker button beside the menu mutes or unmutes chimes without pausing the wind. Corner controls share one responsive page inset. The bottom-right credit links to https://itsmohsen.com/. “Make this yours” in the bottom-right corner of the intro and chapters opens a WhatsApp enquiry to +34 666 601 296 with a prefilled message; it does not send automatically or collect payment. Reduced-motion preferences still disable smooth chapter transitions.
+## World branch — walkable 3D village
 
-`app/scenes.js` holds titles, descriptions and roof anchor positions. `app/physics.js` contains the fixed-step Verlet simulation. `app/Calligraphy.jsx` draws the characters, runs only the visible chapter, and pauses work when the document is hidden. `app/navigation.js` normalizes wheel input and gates momentum. `app/globals.css` holds the layout and visual styling. Scene backgrounds in `public/scenes/` were derived from the supplied concept images using image generation to remove the baked-in interface and hanging text. The bells and landscapes remain part of the artwork.
+The `world` branch replaces horizontal scrolling with a continuous Three.js village. All seven roof designs are modeled as real geometry: instanced ceramic tiles, curved ridges, timber brackets, bells, and sparse house outlines. The original paintings remain available as a WebGL fallback; they are not mapped onto flat cards in the 3D scene.
+
+- WASD or arrow keys: walk and strafe. Hold Shift to walk faster.
+- Drag the view: look around. Release and move through the hanging characters to brush them.
+- Hold the on-screen arrow buttons: walk with a mouse or touch. On touch, drag the words to brush them; drag empty space to look.
+- Places: jump directly to any of the seven houses.
+- Enter Quiet Eaves: unlock the existing audio. The header speaker toggles mute.
+
+The lane has physical movement bounds to keep the camera outside the houses. Movement pauses when menus open or the window loses focus. Reduced-motion preference disables ambient wind and bell sway. The intro purchase link and credit stay centered; in the village they remain at the bottom right. Purchase opens a WhatsApp draft and does not send it.
+
+`app/world/WorldCanvas.jsx` owns the perspective camera, lighting, street, input, ray-based brushing and renderer cleanup. `architecture.js` generates the seven roofs. `InkCurtain.js` draws the same calligraphy using a shared glyph atlas per house. `ropes3d.js` simulates the anchored strands in three dimensions. `walk.js` handles movement and placement. Only nearby strands are simulated; rendering pauses behind menus and in hidden tabs. The Three.js world loads separately from the interface.
+
+The 1920 × 1080 artwork remains the composition reference, while the village camera adapts to the viewport. The existing React, Vite and Bun setup and approved chime recordings are preserved.
 
 All seven source concepts are represented: idea-3 → silence, idea-5 → whisper, idea-4 → sky, idea-1 → landscape, idea-2 → rain, idea-6 → memory, idea07 → journey.
 

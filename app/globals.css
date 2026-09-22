@@ -99,3 +99,41 @@
 .creator-credit .credit-external{font:12px/1 var(--font-mono);letter-spacing:0;color:var(--primary)}
 .creator-credit:hover .credit-text,.creator-credit:focus-visible .credit-text{text-decoration-color:currentColor}
 .footer-controls .creator-credit:after{content:'';position:absolute;inset:-5px -3px}
+
+/* The WebGL world sits behind readable, unchanged editorial controls. */
+.world-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 36% 30%,#f5ebd9 0%,#eee2cf 64%,#e7dac4 100%)}
+.world-canvas canvas{display:block;width:100%;height:100%}
+.world-ready .chapters{position:relative;z-index:1}.world-ready .chapter{background:transparent}.world-ready .scene-art{visibility:hidden}.world-ready .art-frame{pointer-events:none}
+.world-ready .chapters:before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.065;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23000' filter='url(%23n)' opacity='.5' d='M0 0h160v160H0z'/%3E%3C/svg%3E")}
+.world-loading .world-canvas,.world-fallback .world-canvas{visibility:hidden}
+
+@media(max-aspect-ratio:1.15/1){
+  .world-ready .story,.world-ready .right .story{top:auto;bottom:22%;left:8%;width:84%;text-shadow:0 1px 12px var(--background)}
+  .world-ready .story h1,.world-ready .right .story h1{font-size:clamp(27px,4vw,38px);margin:18px 0;line-height:1.08}
+  .world-ready .story p{font-size:12px;line-height:1.65}
+}
+
+/* A continuous village replaces the chapter track on the world branch. */
+.walk-surface{position:fixed;inset:0;z-index:1;outline:none;touch-action:none;cursor:grab}
+.walk-surface:active{cursor:grabbing}.walk-surface:focus-visible{outline:none}
+.walk-experience .world-canvas{pointer-events:none}
+.place-caption{position:fixed;left:var(--edge-left);bottom:calc(var(--edge-bottom) + 86px);z-index:5;pointer-events:none}
+.place-caption>span{font:10px var(--font-mono);color:var(--primary);letter-spacing:.17em}
+.place-caption p{font:24px/1.2 var(--font-serif);margin:12px 0 0;letter-spacing:-.015em}
+.walking-help{position:fixed;left:var(--edge-left);bottom:var(--edge-bottom);z-index:5;font:9px/1.6 var(--font-mono);letter-spacing:.12em;color:#645c50;pointer-events:none}
+.walking-help small{display:block;font:11px/1.6 var(--font-serif);letter-spacing:.015em;margin-top:7px}
+.walk-help-touch{display:none}
+.walk-controls{position:fixed;left:50%;bottom:var(--edge-bottom);transform:translateX(-50%);z-index:5;display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,36px);gap:5px}
+.walk-key{border:1px solid #8b796650;background:#eee2cf80;touch-action:none;font:19px var(--font-serif);padding:0;transition:background .2s}
+.walk-key:hover,.walk-key:active{background:#eee2cfe6}.walk-key.KeyW{grid-column:2}.walk-key.KeyA{grid-row:2;grid-column:1}.walk-key.KeyS{grid-row:2;grid-column:2}.walk-key.KeyD{grid-row:2;grid-column:3}
+.walk-fallback{position:absolute;inset:0}.walk-fallback>img{width:100%;height:100%;object-fit:cover}.walk-fallback>p{position:absolute;left:50%;top:20%;transform:translateX(-50%);font:12px var(--font-mono);background:#eee2cf;padding:12px;max-width:420px}
+@media(max-width:850px){.walking-help{bottom:calc(var(--edge-bottom) + 160px);max-width:200px}.place-caption{bottom:calc(var(--edge-bottom) + 222px)}.walk-controls{left:var(--edge-left);transform:none;bottom:var(--edge-bottom)}.walk-help-desktop{display:none}.walk-help-touch{display:block}.place-caption p{font-size:20px}}
+@media(max-width:450px){.walk-controls{grid-template-columns:repeat(3,36px)}.walking-help{font-size:8px;max-width:190px}.walk-experience .site-header nav{display:none}.walk-experience .header-actions{margin-left:auto}.place-caption{bottom:calc(var(--edge-bottom) + 214px)}}
+
+fieldset.walk-controls{border:0;padding:0;margin:0;min-width:0}
+
+@media(max-width:850px){
+  .walking-help{bottom:calc(var(--edge-bottom) + 150px);max-width:250px}
+  .place-caption{bottom:calc(var(--edge-bottom) + 228px)}
+  .walk-experience:after{content:'';position:fixed;bottom:0;left:0;right:0;height:310px;background:linear-gradient(transparent,#eee2cfba);z-index:2;pointer-events:none}
+}
